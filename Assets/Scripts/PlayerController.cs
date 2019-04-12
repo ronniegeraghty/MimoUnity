@@ -4,25 +4,38 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
 
-  private bool facingRight;
+  public SpriteRenderer sprite;
+  public LayerMask groundLayer;
+  public Transform groundCheck;
+  public float groundCheckRadius;
+  private bool groundCollision;
   
-
   void Start () {
-    facingRight = true;
+
+  }
+
+  void FixedUpdate () {
+    groundCollision = Physics2D.OverlapCircle (groundCheck.position, groundCheckRadius, groundLayer);
   }
 
   void Update () {
     var rigidBody = GetComponent<Rigidbody2D> ();
     var transform = GetComponent<Transform> ();
+    
     if (Input.GetKey ("right")) {
+      sprite.flipX = false; 
       rigidBody.velocity = new Vector2 (5, rigidBody.velocity.y);
     }
+
     if (Input.GetKey ("left")) {
+      sprite.flipX = true;
       rigidBody.velocity = new Vector2 (-5, rigidBody.velocity.y);
     }
-    if (Input.GetKeyDown ("space")) {
+
+    if (Input.GetKeyDown ("space") && groundCollision) {
       rigidBody.velocity = new Vector2 (rigidBody.velocity.x, 10);
     }
+
     if (transform.position.y < -6) {
       if (transform.position.x < 2) {
         transform.position = new Vector2 (-5, 2);
@@ -32,18 +45,9 @@ public class PlayerController : MonoBehaviour {
     }
   }
 
-  //Update is called once per frame 
-  void FixedUpdate(){
-    float horizontal = Input.GetAxis("Horizontal");
-    Flip(horizontal);
-  }
-  
-  private void Flip(float horizontal){
-    if(horizontal > 0 && !facingRight || horizontal < 0 && facingRight){
-      facingRight = !facingRight;
-      Vector3 theScale = transform.localScale;
-      theScale.x *= -1;
-      transform.localScale = theScale;
+  public void OnTriggerEnter2D (Collider2D other) {
+    if (other.name == "EnemyDamage") {
+      transform.position = new Vector2 (2, 1);
     }
   }
 }
